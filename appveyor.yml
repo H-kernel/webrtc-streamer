@@ -1,6 +1,9 @@
-image: 
-- Ubuntu
-- Visual Studio 2017
+environment:
+  matrix:
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CLANG_VERSION: ToT
+      DEPOT_TOOLS_WIN_TOOLCHAIN: 0
 
 platform: x64
 
@@ -9,33 +12,29 @@ configuration:
   - Debug
 
 install:
-  - cmd: set DEPOT_TOOLS_WIN_TOOLCHAIN=0
-  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\..\depot_tools;%PATH%
-  - sh: export PATH=${APPVEYOR_BUILD_FOLDER}/../depot_tools:${PATH}
-  - cmd: set GENERATOR="Visual Studio 15 2017 Win64"
-  - sh: export GENERATOR="Unix Makefiles"
+  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\depot_tools;%PATH%
+  - sh: export PATH=${APPVEYOR_BUILD_FOLDER}/depot_tools:${PATH}
   - cmd: set
   - sh: env
-  - git submodule update --init
-  - cd ..
-  - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git 
+  - sh: df -h
+  - sh: sudo apt-get update && sudo apt-get install -y --no-install-recommends autoconf automake libtool xz-utils libgtk-3-dev libasound2-dev libpulse-dev
+  - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git 
   - mkdir webrtc
   - cd webrtc
   - fetch --no-history --nohooks webrtc 
   - cd src
-  - ps: echo CONFIGURATION=$env:CONFIGURATION PLATFORM=$env:PLATFORM GENERATOR=$env:GENERATOR
+  - ps: echo CONFIGURATION=$env:CONFIGURATION PLATFORM=$env:PLATFORM
   - ps: (get-content DEPS) | foreach-object {$_ -replace "'src/resources'],", "'src/resources'],'condition':'rtc_include_tests==true',"} | set-content DEPS
   - gclient sync
-  - sh: sudo apt-get update && sudo apt-get install -y --no-install-recommends autoconf automake libtool xz-utils libgtk-3-dev libasound2-dev
 
 before_build:
+  - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\%APPVEYOR_BUILD_WORKER_IMAGE:~-4%\Community\VC\Auxiliary\Build\vcvars64.bat"
   - ps: cd $env:APPVEYOR_BUILD_FOLDER
-  - cmd: cmake -G %GENERATOR% -D WEBRTCBUILD=%CONFIGURATION% .
-  - sh: cmake -G "${GENERATOR}" -D WEBRTCBUILD=${CONFIGURATION} .
+  - cmd: cmake -G Ninja -D WEBRTCBUILD=%CONFIGURATION% -DWEBRTCROOT=%APPVEYOR_BUILD_FOLDER:\=/%/webrtc -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe .
+  - sh: cmake -G Ninja -D WEBRTCBUILD=${CONFIGURATION} -DWEBRTCROOT=${APPVEYOR_BUILD_FOLDER}/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .
 
 build_script:
-  - cmd: msbuild INSTALL.vcxproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-  - sh: make
+  - ninja
 
 after_build:
   - ps: cpack -C "$env:CONFIGURATION"

@@ -1,31 +1,46 @@
 {
     "urls":{
-        "Norway": {"video":"rtsp://217.17.220.110/axis-media/media.amp"},
-        "Hamburg": {"video": "rtsp://stream.livespotting.tv/windit-edge/LS_b5586_720p.stream"}, 
-        "Karlowo-1": {"video": "rtsp://85.255.175.241/h264"}, 
-        "Karlowo-2": {"video": "rtsp://85.255.175.244/h264"}, 
-        "Bunny": {"video": "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov"}, 
+	"Bunny": {"video": "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"},
+       
         "Texel": {"video": "rtsp://webcamserverdh.dyndns-remote.com:1935/live/mp4:ehtx.stream"}, 
-        "Rotterdam": {"video": "rtsp://streaming2.camvista.com:1935/rtplive/paulmartens101034.stream"}, 
+
         "Havenmond": {"video": "rtsp://85.25.218.202:1935/live/mp4:havenmond.stream"}, 
+
         "LilaDelman": {"video": "rtsp://narr-cam.liladelman.com/axis-media/media.amp"}, 
-        "VirginiaTech": {"video": "rtsp://198.82.159.136:554/axis-media/media.amp"},
 
-        "Velkafatra": {"video": "rtsp://stream5.kukaj.sk:1935/live/VELKAFATRA.stream"}, 
-        "Vavrisovo": {"video": "rtsp://stream5.kukaj.sk:1935/live/VAVRISOVO.stream"}, 
+        "VirginiaTech": {"video": "rtsp://198.82.159.136:554/axis-media/media.amp", "position":"37.223357,-80.417004"},
+        "PriceCenterPlaza" : { "video": "rtsp://132.239.12.145:554/axis-media/media.amp"},
+
+        "Bahia": {"video": "rtsp://187.1.147.77:2000/axis-media/media.amp", "position": "-12.618330,-38.955830" },
+        "Honk-Kong": {"video": "rtsp://weathercam.gsis.edu.hk/axis-media/media.amp", "position":"22.352734,114.1277", "options":"rtptransport=tcp&timeout=60"},
+
+        "Velkafatra": {"video": "rtsp://stream5.kukaj.sk:1935/live/VF1212.stream"}, 
+        "Prib": {"video": "rtsp://stream5.kukaj.sk:1935/live/BOCIANY_PRIB.stream"}, 
+        "Vavrisovo": {"video": "rtsp://stream5.kukaj.sk:1935/live/VAVRISOVO.stream","audio": "rtsp://stream5.kukaj.sk:1935/live/VAVRISOVO.stream", "position":"49.0758931,19.7501234"}, 
         "Marina": {"video": "rtsp://stream5.kukaj.sk:1935/live/MARINA.stream"},     
+        "Sokolylm": {"video": "rtsp://stream5.kukaj.sk:1935/live/SOKOLYLM.stream"},   
+        "Demanova": {"video": "rtsp://stream5.kukaj.sk:1935/live/DEMANOVA.stream"}, 
+        "Vysokaprimorave": {"video": "rtsp://stream5.kukaj.sk:1935/live/VYSOKAPRIMORAVE.stream"}, 
+        
+        "KonskyGrun": {"video": "rtsp://stream.tmr.sk:1935/tmr/STREAM17.stream"}, 
+        "VyhladJazero": {"video": "rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream"}, 
 
-        "Scheveningen-1": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys1.stream"}, 
+        "Lomnicak": {"video": "rtsp://stream.zivekamery.sk:1935/live/LOMNICAK.stream"}, 
+
+        "Scheveningen-1": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys1.stream", "position":"52.1042263,4.2494571"}, 
         "Scheveningen-3": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys3.stream"}, 
 
-        "Paris-1": {"video": "rtsp://46.105.54.176:80/64connections/Pariscam1.stream"}, 
-        "Paris-3": {"video": "rtsp://46.105.54.176:80/64connections/Pariscam3.stream"},
-        "Chamrousse": {"video": "rtsp://46.105.54.176:80/64connections/chamrousse2.stream"}, 
-        "Marseille": {"video": "rtsp://46.105.54.176:80/64connections/marseille.stream"}, 
+        "Curacao": {"video": "rtsp://srv13.arkasis.nl:80/498/default.stream", "position":"12.2376122,-69.1801954"},  
 
-        "Curacao": {"video": "rtsp://srv13.arkasis.nl:80/498/default.stream"}, 
-        "Volendam": {"video": "rtsp://srv13.arkasis.nl:80/508/default.stream"}, 
-        "Maasstricht": {"video": "rtsp://srv13.arkasis.nl:80/639/default.stream"}, 
-        "DeDam": {"video": "rtsp://srv13.arkasis.nl:80/731/default.stream"}
+        "Bedford Hills": {"video": "rtsp://73.114.177.111/axis-media/media.amp"},
+        "Pocapaglia": {"video": "rtsp://176.65.94.105/axis-media/media.amp"},
+        "Norwich": {"video": "rtsp://37.157.51.30/axis-media/media.amp"},
+        "Montana": {"video": "rtsp://64.187.201.16/axis-media/media.amp"},
+        "Trento": {"video": "rtsp://194.32.173.211/axis-media/media.amp"},
+        "Great Falls": {"video": "rtsp://76.75.8.116/axis-media/media.amp", "position":"47.551039,-111.539400"},
+        "Western Cape": {"video":"rtsp://196.21.92.82/axis-media/media.amp", "position":"-33.925840,18.423220"},
+        "Nordland": {"video":"rtsp://77.110.228.219/axis-media/media.amp", "position":"67.280000,14.405010" },
+        "Wroclaw": {"video":"rtsp://78.10.34.92/axis-media/media.amp", "position":"51.100000,17.033330"},
+        "Kiev": {"video":"rtsp://77.52.149.60/axis-media/media.amp", "position":"50.454660,30.523800"}
     }
 }

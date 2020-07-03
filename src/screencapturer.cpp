@@ -9,10 +9,6 @@
 
 #ifdef USE_X11
 
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#endif
-
 #include "rtc_base/logging.h"
 
 #include "screencapturer.h"
@@ -38,7 +34,7 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 		if (conversionResult >= 0) {
 			webrtc::VideoFrame videoFrame(I420buffer, webrtc::VideoRotation::kVideoRotation_0, rtc::TimeMicros());
 			if ( (m_height == 0) && (m_width == 0) ) {
-				this->OnFrame(videoFrame, videoFrame.height(), videoFrame.width());	
+				broadcaster_.OnFrame(videoFrame);	
 
 			} else {
 				int height = m_height;
@@ -55,7 +51,7 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 				scaled_buffer->ScaleFrom(*videoFrame.video_frame_buffer()->ToI420());
 				webrtc::VideoFrame frame = webrtc::VideoFrame(scaled_buffer, webrtc::kVideoRotation_0, rtc::TimeMicros());
 						
-				this->OnFrame(frame, frame.width(), frame.height());
+				broadcaster_.OnFrame(frame);
 			}
 		} else {
 			RTC_LOG(LS_ERROR) << "DesktopCapturer:OnCaptureResult conversion error:" << conversionResult;
@@ -66,25 +62,23 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 	}
 }
 		
-void DesktopCapturer::Run() {
+void DesktopCapturer::CaptureThread() {
 	RTC_LOG(INFO) << "DesktopCapturer:Run start";
 	while (IsRunning()) {
 		m_capturer->CaptureFrame();
 	}
 	RTC_LOG(INFO) << "DesktopCapturer:Run exit";
 }
-cricket::CaptureState DesktopCapturer::Start(const cricket::VideoFormat& format) {
-	SetCaptureFormat(&format);
-	SetCaptureState(cricket::CS_RUNNING);
-	rtc::Thread::Start();
+bool DesktopCapturer::Start() {
+	m_isrunning = true;
+	m_capturethread = std::thread(&DesktopCapturer::CaptureThread, this); 
 	m_capturer->Start(this);
-	return cricket::CS_RUNNING;
+	return true;
 }
 		
 void DesktopCapturer::Stop() {
-	SetCaptureState(cricket::CS_STOPPED);			
-	rtc::Thread::Stop();
-	SetCaptureFormat(NULL);
+	m_isrunning = false;
+	m_capturethread.join(); 
 }
 		
 #endif

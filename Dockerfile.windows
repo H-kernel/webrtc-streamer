@@ -1,36 +1,53 @@
 # build
-FROM microsoft/windowsservercore as builder
-MAINTAINER michel.promonet@free.fr
+FROM cirrusci/windowsservercore:2019 as builder
+LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-SHELL ["powershell"]
+ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
+       CLANG_VERSION=ToT \
+       PYTHONIOENCODING=UTF-8 \
+       MSVC_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community" \
+       chocolateyUseWindowsCompression="true"
 
-RUN Invoke-WebRequest "https://aka.ms/vs/15/release/vs_community.exe" -OutFile "$env:TEMP\vs_community.exe" -UseBasicParsing
-RUN & "$env:TEMP\vs_community.exe" --add Microsoft.VisualStudio.Workload.NetWeb --quiet --wait --norestart --noUpdateInstaller | Out-Default
+# Install Chocolatey & packages
+RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
+RUN choco install --no-progress -y 7zip \
+       && choco install --no-progress -y git python2 sed curl windows-sdk-10 \
+       && choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=System' \
+       && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0   
 
-RUN & 'C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe' /version
+# install depot_tools
+RUN git config --global core.autocrlf false \
+       && git config --global core.filemode false \
+       && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth 1 C:\depot_tools \
+       && SETX PATH "%PATH%;C:\depot_tools\;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win"
 
-RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
-	&& export PATH=/webrtc/depot_tools:$PATH \
-	&& cd /webrtc \
-	&& fetch --no-history --nohooks webrtc \
-	&& gclient sync \
-	&& cd /webrtc-streamer \
-	&& cmake -G "Visual Studio 15 2017 Win64" . \
-	&& msbuild INSTALL.vcxproj /p:Configuration=Release /p:Platform=x64 \
-	&& cpack \
-	&& mkdir /app && tar xvzf webrtc-streamer*.tar.gz --strip=1 -C /app/ \
-	&& rmdir /s /q /webrtc-streamer 
+RUN  call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" \
+       && mkdir c:\webrtc && cd c:\webrtc \
+       && time /t \
+       && fetch --no-history --nohooks webrtc \
+       && time /t \
+       && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
+       && gclient sync \
+       && time /t \
+       && cd C:\webrtc-streamer \
+       && cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe . \
+       && time /t \
+       && ninja \
+       && time /t \
+       && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
+       && rmdir /s /q c:\webrtc 
 
 # run
-FROM  microsoft/nanoserver
+FROM mcr.microsoft.com/windows:1809
 
 WORKDIR /app
 COPY --from=builder /app/ /app/
 
-EXPOSE 8000
+RUN  webrtc-streamer.exe -V
 
+EXPOSE 8000
 ENTRYPOINT [ "webrtc-streamer.exe" ]
-CMD [ "-a", "-C", "config.json", "screen://" ]
+CMD [ "-a", "-C", "config.json" ]

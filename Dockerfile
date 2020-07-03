@@ -1,11 +1,11 @@
 # build
 FROM heroku/heroku:18 as builder
-MAINTAINER michel.promonet@free.fr
+LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libasound2-dev libgtk-3-dev cmake p7zip-full \
+RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libpulse-dev libasound2-dev libgtk-3-dev cmake p7zip-full \
         && git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
         && export PATH=/webrtc/depot_tools:$PATH \
 	&& cd /webrtc \
@@ -25,10 +25,11 @@ FROM ubuntu:18.04
 WORKDIR /app
 COPY --from=builder /app/ /app/
 
-RUN apt-get update && apt-get install -y --no-install-recommends libasound2 libgtk-3-0 \
-	&& apt-get clean && rm -rf /var/lib/apt/lists/
+RUN apt-get update && apt-get install -y --no-install-recommends libasound2 libgtk-3-0 libssl1.0 \
+	&& apt-get clean && rm -rf /var/lib/apt/lists/ \
+	&& ./webrtc-streamer -V
 
 EXPOSE 8000
 
 ENTRYPOINT [ "./webrtc-streamer" ]
-CMD [ "-a", "-C", "config.json", "screen://" ]
+CMD [ "-a", "-C", "config.json" ]

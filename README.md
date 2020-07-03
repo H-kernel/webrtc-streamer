@@ -1,6 +1,9 @@
 [![TravisCI](https://travis-ci.org/mpromonet/webrtc-streamer.png)](https://travis-ci.org/mpromonet/webrtc-streamer)
 [![CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer.svg?style=shield)](https://circleci.com/gh/mpromonet/webrtc-streamer)
 [![Appveyor](https://ci.appveyor.com/api/projects/status/github/mpromonet/webrtc-streamer?branch=master&svg=true)](https://ci.appveyor.com/project/mpromonet/webrtc-streamer/build/artifacts)
+[![CirusCI](https://api.cirrus-ci.com/github/mpromonet/webrtc-streamer.svg)](https://cirrus-ci.com/github/mpromonet/webrtc-streamer)
+[![Snap Status](https://build.snapcraft.io/badge/mpromonet/webrtc-streamer.svg)](https://build.snapcraft.io/user/mpromonet/webrtc-streamer)
+[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c209c81a15854964a08df5c300f56804)](https://www.codacy.com/app/michelpromonet_2643/webrtc-streamer?utm_source=github.com&utm_medium=referral&utm_content=mpromonet/webrtc-streamer&utm_campaign=badger)
 
@@ -9,12 +12,13 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/mpromonet/webrtc-streamer.svg)](https://hub.docker.com/r/mpromonet/webrtc-streamer/)
 
 [![Heroku](https://heroku-badge.herokuapp.com/?app=webrtc-streamer)](https://webrtc-streamer.herokuapp.com/)
-[![Openshift](https://img.shields.io/badge/openshift-ok-green.svg)](http://webrtc-streamer-mpromonet.7e14.starter-us-west-2.openshiftapps.com/)
 
 WebRTC-streamer
 ===============
 
-This is a try to stream video sources through WebRTC using simple mechanism.  
+[![NanoPi](images/nanopi.jpg)](http://wiki.friendlyarm.com/wiki/index.php/NanoPi_NEO_Air)
+
+WebRTC-streamer is an experiment to stream video capture devices and RTSP sources through WebRTC using simple mechanism.  
 
 It embeds a HTTP server that implements API and serves a simple HTML page that use them through AJAX.   
 
@@ -28,15 +32,12 @@ The WebRTC signaling is implemented through HTTP requests:
 
 The list of HTTP API is available using /api/help.
 
-Nowdays there is 3 builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer) :
+Nowdays there is builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer), [Appveyor](https://ci.appveyor.com/project/mpromonet/webrtc-streamer), [CirrusCI](https://cirrus-ci.com/github/mpromonet/webrtc-streamer) and [GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions) :
  * for x86_64 on Ubuntu Bionic
- * for armv7 crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry Pi2 and NanoPi NEO)
- * for armv6+vfp crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry PiB and should run on a Raspberry Zero)
+ * for armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi NEO)
+ * for armv6+vfp crosscompiled (this build is running on Raspberry PiB and should run on a Raspberry Zero)
+ * Windows x64 build with clang
  
-and 4 builds on [Appveyor](https://ci.appveyor.com/project/mpromonet/webrtc-streamer) :
-* for Windows using Visual 2017 64bits Release/Debug
-* for x86_64 Ubuntu Xenial Release/Debug
-
 The webrtc stream name could be :
  * an alias defined using -n argument then the corresponding -u argument will be used to create the capturer
  * an "rtsp://" url that will be openned using an RTSP capturer based on live555
@@ -71,11 +72,9 @@ Download WebRTC
 
 Build WebRTC Streamer
 -------
-	git submodule update --init
-	cmake . -DWEBRTCBUILD=<Release or Debug> -DWEBRTCROOT=<path to WebRTC>
-	make
+	cmake . && make 
 
-where WEBRTCROOT and WEBRTCBUILD indicate how to point to WebRTC :
+It is possible to specify cmake parameters WEBRTCBUILD & WEBRTCROOT that indicate build type and path to  WebRTC SDK :
  - $WEBRTCROOT/src should contains source (default is $(pwd)/../webrtc) 
  - $WEBRTCROOT/src/out/$WEBRTCBUILD should contains libraries (default is Release)
 
@@ -90,12 +89,15 @@ Usage
         	-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
 		-w webroot         : path to get files
 		-c sslkeycert      : path to private key and certificate for HTTPS
-		-T nbthreads       : number of threads for HTTP server
+		-N nbthreads       : number of threads for HTTP server
 		-A passwd          : password file for HTTP server access
+		-D authDomain      : authentication domain for HTTP server access (default:mydomain.com)
 
-         	-S[stun_address]   : start embeded STUN server bind to address (default 0.0.0.0:3478)
-         	-s[stun_address]   : use an external STUN server (default stun.l.google.com:19302)
-         	-t[username:password@]turn_address : use an external TURN relay server (default disabled)		
+		-S[stun_address]                   : start embeded STUN server bind to address (default 0.0.0.0:3478)
+		-s[stun_address]                   : use an external STUN server (default:stun.l.google.com:19302 , -:means no STUN)
+		-t[username:password@]turn_address : use an external TURN relay server (default:disabled)
+		-T[username:password@]turn_address : start embeded TURN server (default:disabled)
+		
         	-a[audio layer]    : spefify audio capture layer to use (default:3)		
 
 		-n name -u videourl -U audiourl : register a name for a video url and an audio url
@@ -104,12 +106,9 @@ Usage
 
 Arguments of '-H' are forwarded to option [listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080) of civetweb, then it is possible to use the civetweb syntax like `-H8000,9000` or `-H8080r,8443s`.
 
-Example
+Examples
 -----
-	webrtc-streamer rtsp://217.17.220.110/axis-media/media.amp \
-				rtsp://85.255.175.241/h264 \
-				rtsp://85.255.175.244/h264 \
-				rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov
+	./webrtc-streamer rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
 
 
 [![Screenshot](images/snapshot.png)](https://webrtc-streamer.herokuapp.com/)
@@ -118,11 +117,28 @@ Example
 
 We can access to the WebRTC stream using [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html) for instance :
 
- * https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?rtsp://217.17.220.110/axis-media/media.amp
+ * https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
  * https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?Bunny
 
 An example displaying grid of WebRTC Streams is available using option "layout=<lines>x<columns>"
 [![Screenshot](images/layout2x4.png)](https://webrtc-streamer.herokuapp.com/?layout=2x4)
+
+[Live Demo](https://webrtc-streamer.herokuapp.com/?layout=2x4)
+
+Using embedded STUN/TURN server behind a NAT:
+===============
+
+It is possible start embeded ICE server and publish its url using:
+
+    ./webrtc-streamer -S0.0.0.0:3478 -s$(curl -s ifconfig.me):3478
+    ./webrtc-streamer -s- -T0.0.0.0:3478 -tturn:turn@$(curl -s ifconfig.me):3478
+    ./webrtc-streamer -S0.0.0.0:3478 -s$(curl -s ifconfig.me):3478 -T0.0.0.0:3479 -tturn:turn@$(curl -s ifconfig.me):3479
+The command `curl -s ifconfig.me` is getting the public IP, it could also given as a static parameter.
+
+In order to configure the NAT rules using the upnp feature of the router, it is possible to use [upnpc](https://manpages.debian.org/unstable/miniupnpc/upnpc.1.en.html) like this:
+
+    upnpc -r 8000 tcp 3478 udp
+Adapting with the HTTP port, STUN port, TURN port.
 
 Embed in a HTML page:
 ===============
@@ -138,15 +154,53 @@ A short sample HTML page using webrtc-streamer running locally on port 8000 :
 	<script src="libs/adapter.min.js" ></script>
 	<script src="webrtcstreamer.js" ></script>
 	<script>        
-	    var webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
-	    window.onload         = function() { webRtcServer.connect("rtsp://pi2.local:8554/unicast") }
-	    window.onbeforeunload = function() { webRtcServer.disconnect() }
+	    var webRtcServer      = null;
+	    window.onload         = function() { 
+	        webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
+		webRtcServer.connect("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
+	    }
+	    window.onbeforeunload = function() { webRtcServer.disconnect(); }
 	</script>
 	</head>
 	<body> 
 	    <video id="video" />
 	</body>
 	</html>
+
+Using WebComponent
+==================
+Using web-component could be a simple way to display some webrtc stream, a minimal page could be :
+
+	<html>
+	<head>
+        <script type="module" src="webrtc-streamer-element.js"></script>
+	</head>
+	<body>
+	   <webrtc-streamer url="rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"></webrtc-streamer>
+	</body>
+	</html>
+
+[Live Demo](https://webrtc-streamer.herokuapp.com/Bunny.html)  
+
+Using the webcomponent with a stream selector :
+
+[![Screenshot](images/wc-selector.jpg)](https://webrtc-streamer.herokuapp.com/webrtc-streamer-element.html)
+
+[Live Demo](https://webrtc-streamer.herokuapp.com/webrtc-streamer-element.html)
+
+Using the webcomponent over google map :
+
+[![Screenshot](images/wc-map.jpg)](https://webrtc-streamer.herokuapp.com/map.html)
+
+[Live Demo](https://webrtc-streamer.herokuapp.com/map.html)
+
+Object detection using tensorflow.js
+===============
+
+[![Screenshot](images/tensorflow.jpg)](https://webrtc-streamer.herokuapp.com/tensorflow.html)
+
+[Live Demo](https://webrtc-streamer.herokuapp.com/tensorflow.html)
+
 
 Connect to Janus Gateway Video Room
 ===============
@@ -163,7 +217,7 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 	<script>        
 		var janus = new JanusVideoRoom("https://janus.conf.meetecho.com/janus", null);
 		janus.join(1234, "rtsp://pi2.local:8554/unicast","pi2");
-		janus.join(1234, "rtsp://217.17.220.110/axis-media/media.amp","media");	    
+		janus.join(1234, "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov","media");	    
 	</script>
 	</head>
 	</html>
@@ -200,7 +254,7 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be :
 	<script src="xmppvideoroom.js" ></script>
 	<script>        
 		var xmpp = new XMPPVideoRoom("meet.jit.si", null);
-		xmpp.join("testroom", "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov","Bunny");	    
+		xmpp.join("testroom", "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov","Bunny");	    
 	</script>
 	</head>
 	</html>
@@ -227,6 +281,9 @@ The container entry point is the webrtc-streamer application, then you can :
 
         docker run -p 8000:8000 -it mpromonet/webrtc-streamer -n raspicam -u rtsp://pi2.local:8554/unicast
 
+* run the container giving config.json file using :
+
+        docker run -p 8000:8000 -v $PWD/config.json:/app/config.json mpromonet/webrtc-streamer
 
 
 
